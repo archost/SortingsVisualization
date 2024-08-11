@@ -6,7 +6,7 @@ public class SortingParameters : MonoBehaviour
 {
     public static SortingParameters Instance {  get; private set; }
 
-    public float speed { get; set; }
+    public int speed { get; set; }
 
     public string sortingType { get; set; }
 

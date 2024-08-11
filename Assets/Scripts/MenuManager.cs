@@ -18,7 +18,7 @@ public class MenuManager : MonoBehaviour
     {
         SortingParameters.Instance.sortingType = sortingAlgorithm.options[sortingAlgorithm.value].text;
         SortingParameters.Instance.count = int.Parse(elementsCount.text);
-        SortingParameters.Instance.speed = float.Parse(speed.text, CultureInfo.InvariantCulture.NumberFormat);
+        SortingParameters.Instance.speed = int.Parse(speed.text);
     }
     public void LoadMainScene()
     {

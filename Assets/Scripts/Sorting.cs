@@ -5,6 +5,9 @@ using TMPro;
 
 public class Sorting : MonoBehaviour
 {
+    [SerializeField]
+    private GenerateTone generateTone;
+
     private List<GameObject> _array;
 
     [SerializeField]
@@ -26,14 +29,16 @@ public class Sorting : MonoBehaviour
     private Sorting()
     {
         _count = SortingParameters.Instance.count;
-        _speed = SortingParameters.Instance.speed;
+        _speed = 1f / SortingParameters.Instance.speed;
         _sortingAlgorithm = SortingParameters.Instance.sortingType;
         _sortings = new Dictionary<string, IEnumerator>()
         {
             { "Bubble Sort", bubbleSort() },
             { "Selection Sort", selectionSort() },
             { "Insertion Sort", insertionSort() },
-            { "Quick Sort", quickSort(0, _count - 1) }
+            { "Quick Sort", quickSort(0, _count - 1) },
+            { "Shell Sort", shellSort() },
+            { "Heap Sort", heapSort() },
         };
     }
 
@@ -150,8 +155,70 @@ public class Sorting : MonoBehaviour
             StartCoroutine(quickSort(left + 1, r));
     }
 
+    private IEnumerator shellSort()
+    {
+        int[] step = { 1750, 701, 301, 132, 57, 23, 10, 4, 1 };
+        float buf;
+        int gap, j;
+
+        for (int k = 0; k < 9; k++)
+        {
+            gap = step[k];
+            for (int i = gap; i < _count; i++)
+            {
+                buf = _array[i].transform.localScale.y;
+                for (j = i - gap; j >= 0 && buf < _array[j].transform.localScale.y; j -= gap)
+                {
+                    _iterations++;
+                    _iterationText.text = "Iterations: " + _iterations;
+
+                    _array[j + gap].transform.localScale = new Vector3(_array[j + gap].transform.localScale.x, _array[j].transform.localScale.y);
+
+                    yield return new WaitForSeconds(_speed);
+                }
+                _array[j + gap].transform.localScale = new Vector3(_array[j + gap].transform.localScale.x, buf);
+            }
+        }
+    }
+
+    private IEnumerator heapify(int size, int i)
+    {
+        _iterations++;
+        _iterationText.text = "Iterations: " + _iterations;
+        yield return new WaitForSeconds(_speed);
+
+        int largest = i;
+        int l = 2 * i + 1;
+        int r = 2 * i + 2;
+
+        if (l < size && _array[l].transform.localScale.y > _array[largest].transform.localScale.y)
+            largest = l;
+        if (r < size && _array[r].transform.localScale.y > _array[largest].transform.localScale.y)
+            largest = r;
+        if (largest != i)
+        {
+            Swap(i, largest);
+            yield return StartCoroutine(heapify(size, largest));
+        }
+    }
+
+    private IEnumerator heapSort()
+    {
+        for (int i = _count / 2 - 1; i >= 0; i--)
+        {
+            yield return StartCoroutine(heapify(_count, i));
+        }
+        for (int i = _count - 1; i >= 0; i--)
+        {
+            Swap(0, i);
+            yield return StartCoroutine(heapify(i, 0));
+        }
+    }
+
     private void Swap(int x, int y)
     {
+        generateTone.GenerateSound(_array[y].transform.localScale.y * 1000, _speed);
+
         float temp = _array[x].transform.position.x;
         _array[x].transform.position = new Vector2(_array[y].transform.position.x, _array[x].transform.position.y);
         _array[y].transform.position = new Vector2(temp, _array[x].transform.position.y);
